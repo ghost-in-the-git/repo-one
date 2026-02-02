@@ -479,7 +479,7 @@
             let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
             const countdownMsg = document.createElement('div');
             countdownMsg.className = 'message system';
-            countdownMsg.textContent = `Do you want to engage them? You have [${secondsLeft}] seconds to decide...`;
+            countdownMsg.textContent = `Enemy signal detected. [${secondsLeft}] seconds remaining to engage.`;
             chatMessages.appendChild(countdownMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             game.countdownMsg = countdownMsg;
@@ -488,7 +488,7 @@
             game.countdownInterval = setInterval(() => {
                 secondsLeft--;
                 if (secondsLeft > 0) {
-                    countdownMsg.textContent = `Do you want to engage them? You have [${secondsLeft}] seconds to decide...`;
+                    countdownMsg.textContent = `Enemy signal detected. [${secondsLeft}] seconds remaining to engage.`;
                 } else {
                     clearCountdown();
                 }
@@ -724,8 +724,8 @@
             }
 
             const et = game.currentWave.enemyType;
-            await addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
-            await addMessage(`Your mech moves to engage the enemy...`, 'system');
+            await addMessage(`Engagment confirmed for ${game.currentWave.count} ${et.name}s!`, 'player');
+            await addMessage(`Combobreaker cleared for combat.`, 'system');
 
             // Battle loop
             async function runBattle() {
