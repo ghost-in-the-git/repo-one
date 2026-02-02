@@ -459,7 +459,7 @@
             game.currentWave = generateWave();
             const et = game.currentWave.enemyType;
             addMessage(`${game.currentWave.count} ${et.name}s have appeared! Do you want to engage them?`, 'enemy');
-            addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'system');
+            addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'battle');
             addMessage(`You have 30 seconds to decide...`, 'system');
 
             btnEngage.disabled = false;
