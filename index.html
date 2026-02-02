@@ -323,6 +323,7 @@
         </div>
     </div>
 
+    <script src="enemies.js"></script>
     <script>
         // Game State
         const game = {
@@ -411,16 +412,41 @@
             }
         }
 
+        // Select enemy type based on player level and appearance rates
+        function selectEnemyType() {
+            const playerLevel = game.player.level;
+
+            // Filter enemies by level requirement
+            const available = ENEMIES.filter(e => e.minLevel <= playerLevel);
+
+            // Calculate total appearance rate
+            const totalRate = available.reduce((sum, e) => sum + e.appearanceRate, 0);
+
+            // Random selection weighted by appearance rate
+            let roll = Math.random() * totalRate;
+            for (const enemy of available) {
+                roll -= enemy.appearanceRate;
+                if (roll <= 0) {
+                    return enemy;
+                }
+            }
+
+            // Fallback to first available
+            return available[0];
+        }
+
         // Generate enemy wave
         function generateWave() {
-            const baseEnemies = 5 + game.player.level * 2;
-            const variance = Math.floor(Math.random() * 5) - 2;
-            const enemyCount = Math.max(3, baseEnemies + variance);
+            const enemyType = selectEnemyType();
+            const baseEnemies = 3 + game.player.level;
+            const variance = Math.floor(Math.random() * 3) - 1;
+            const enemyCount = Math.max(2, baseEnemies + variance);
 
             return {
+                enemyType: enemyType,
                 count: enemyCount,
-                hp: enemyCount,
-                damage: 1 // Each droid does 1 damage
+                remaining: enemyCount,
+                currentEnemy: null // Will hold current enemy's HP in battle
             };
         }
 
@@ -429,7 +455,9 @@
             if (game.inBattle || game.currentWave) return;
 
             game.currentWave = generateWave();
-            addMessage(`${game.currentWave.count} droids have appeared! Do you want to engage them?`, 'enemy');
+            const et = game.currentWave.enemyType;
+            addMessage(`${game.currentWave.count} ${et.name}s have appeared! Do you want to engage them?`, 'enemy');
+            addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'system');
             addMessage(`You have 1 minute to decide...`, 'system');
 
             btnEngage.disabled = false;
@@ -466,36 +494,43 @@
             }, 1000);
         }
 
-        // Battle round - fight one droid at a time
+        // Player attack helper - calculates damage vs enemy defence
+        function calculateDamage(attackStat, defenceStat) {
+            const damage = Math.max(1, attackStat - defenceStat);
+            return damage;
+        }
+
+        // Battle round - fight one enemy at a time
         async function battleRound() {
             const p = game.player;
             const wave = game.currentWave;
+            const et = wave.enemyType;
 
-            if (!wave || wave.hp <= 0 || p.hp <= 0) {
+            if (!wave || wave.remaining <= 0 || p.hp <= 0) {
                 endBattle();
                 return;
             }
 
-            addMessage(`--- Droid ${wave.count - wave.hp + 1} of ${wave.count} ---`, 'system');
-
-            // Droid attacks first
-            await delay(400);
-            const enemyDamage = wave.damage;
-            const blocked = Math.min(p.defence, enemyDamage);
-            const takenDamage = enemyDamage - blocked;
-
-            addMessage(`Droid attacks!`, 'enemy');
-
-            if (blocked > 0) {
-                addMessage(`Your DEF blocks ${blocked} damage!`, 'battle');
+            // Spawn new enemy if needed
+            if (wave.currentEnemy === null) {
+                wave.currentEnemy = et.hp;
+                addMessage(`--- ${et.name} ${wave.count - wave.remaining + 1} of ${wave.count} ---`, 'system');
             }
 
-            if (takenDamage > 0) {
-                p.hp = Math.max(0, p.hp - takenDamage);
-                addMessage(`You take ${takenDamage} damage!`, 'damage');
+            // Enemy attacks first
+            await delay(400);
+            const enemyDamage = calculateDamage(et.attack, p.defence);
+
+            addMessage(`${et.name} attacks!`, 'enemy');
+
+            if (p.defence > 0) {
+                addMessage(`Your DEF reduces damage!`, 'battle');
+            }
+
+            if (enemyDamage > 0) {
+                p.hp = Math.max(0, p.hp - enemyDamage);
+                addMessage(`You take ${enemyDamage} damage!`, 'damage');
                 updateStats();
-            } else {
-                addMessage(`All damage blocked!`, 'victory');
             }
 
             // Check if player defeated
@@ -507,51 +542,71 @@
 
             await delay(400);
 
-            // Player attacks - destroy 1 droid
-            let droidsDestroyed = 1;
+            // Player attacks
             let comboTriggered = Math.random() * 100 < p.combo;
+            let playerDamage = calculateDamage(p.attack, et.defence);
 
-            if (comboTriggered && wave.hp > 1) {
-                droidsDestroyed = 2;
-                addMessage(`COMBO! Double strike!`, 'victory');
+            if (comboTriggered) {
+                playerDamage *= 2;
+                addMessage(`COMBO! Double damage!`, 'victory');
             }
 
-            droidsDestroyed = Math.min(droidsDestroyed, wave.hp);
-            wave.hp -= droidsDestroyed;
+            wave.currentEnemy -= playerDamage;
 
-            addMessage(`You attack!`, 'player');
-            addMessage(`${droidsDestroyed} droid${droidsDestroyed > 1 ? 's' : ''} destroyed!`, 'battle');
+            addMessage(`You attack for ${playerDamage} damage!`, 'player');
 
-            // Check if wave defeated
-            if (wave.hp <= 0) {
-                await delay(500);
-                endBattle(true);
-                return;
-            }
+            // Check if current enemy destroyed
+            if (wave.currentEnemy <= 0) {
+                wave.remaining--;
+                wave.xpEarned = (wave.xpEarned || 0) + et.xp;
+                addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                wave.currentEnemy = null; // Next round spawns new enemy
 
-            // Speed check for extra attack
-            if (Math.random() * 100 < p.speed) {
-                addMessage(`Your mech moves fast! Extra attack!`, 'system');
-                await delay(400);
-
-                let bonusDestroyed = 1;
-                let bonusCombo = Math.random() * 100 < p.combo;
-
-                if (bonusCombo && wave.hp > 1) {
-                    bonusDestroyed = 2;
-                    addMessage(`COMBO on bonus attack!`, 'victory');
-                }
-
-                bonusDestroyed = Math.min(bonusDestroyed, wave.hp);
-                wave.hp -= bonusDestroyed;
-
-                addMessage(`Bonus strike!`, 'player');
-                addMessage(`${bonusDestroyed} more droid${bonusDestroyed > 1 ? 's' : ''} destroyed!`, 'battle');
-
-                if (wave.hp <= 0) {
+                if (wave.remaining <= 0) {
                     await delay(500);
                     endBattle(true);
                     return;
+                }
+            } else {
+                addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+            }
+
+            // Speed check for extra attack
+            if (Math.random() * 100 < p.speed && wave.remaining > 0) {
+                addMessage(`Your mech moves fast! Extra attack!`, 'system');
+                await delay(400);
+
+                // If current enemy is dead, attack next one
+                if (wave.currentEnemy === null) {
+                    wave.currentEnemy = et.hp;
+                    addMessage(`--- ${et.name} ${wave.count - wave.remaining + 1} of ${wave.count} ---`, 'system');
+                }
+
+                let bonusCombo = Math.random() * 100 < p.combo;
+                let bonusDamage = calculateDamage(p.attack, et.defence);
+
+                if (bonusCombo) {
+                    bonusDamage *= 2;
+                    addMessage(`COMBO on bonus attack!`, 'victory');
+                }
+
+                wave.currentEnemy -= bonusDamage;
+
+                addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
+
+                if (wave.currentEnemy <= 0) {
+                    wave.remaining--;
+                    wave.xpEarned = (wave.xpEarned || 0) + et.xp;
+                    addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                    wave.currentEnemy = null;
+
+                    if (wave.remaining <= 0) {
+                        await delay(500);
+                        endBattle(true);
+                        return;
+                    }
+                } else {
+                    addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
                 }
             }
 
@@ -567,12 +622,14 @@
                 game.battleInterval = null;
             }
 
-            const droidsKilled = game.currentWave ? game.currentWave.count - game.currentWave.hp : 0;
+            const wave = game.currentWave;
+            const enemiesKilled = wave ? wave.count - wave.remaining : 0;
+            const xpEarned = wave ? (wave.xpEarned || 0) : 0;
 
             if (victory) {
-                addMessage(`*** VICTORY! All droids destroyed! ***`, 'victory');
-                game.player.xp += droidsKilled;
-                addMessage(`You gained ${droidsKilled} XP!`, 'system');
+                addMessage(`*** VICTORY! All enemies destroyed! ***`, 'victory');
+                game.player.xp += xpEarned;
+                addMessage(`You gained ${xpEarned} XP!`, 'system');
                 checkLevelUp();
             } else {
                 addMessage(`*** DEFEAT! Your mech has been destroyed! ***`, 'defeat');
@@ -628,14 +685,15 @@
                 game.regenInterval = null;
             }
 
-            addMessage(`Engaging ${game.currentWave.count} droids!`, 'player');
+            const et = game.currentWave.enemyType;
+            addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
             await delay(500);
             addMessage(`Your mech moves to engage the enemy...`, 'battle');
             await delay(1000);
 
             // Battle loop
             async function runBattle() {
-                while (game.inBattle && game.currentWave && game.currentWave.hp > 0 && game.player.hp > 0) {
+                while (game.inBattle && game.currentWave && game.currentWave.remaining > 0 && game.player.hp > 0) {
                     await battleRound();
                 }
             }
