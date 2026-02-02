@@ -472,14 +472,14 @@
 
             game.currentWave = generateWave();
             const et = game.currentWave.enemyType;
-            addMessage(`${game.currentWave.count} ${et.name}s detected!`, 'enemy');
-            addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
+            addMessage(`${game.currentWave.count} hostile [${et.name}] are within engagement range`, 'enemy');
+            addMessage(` Unit stats: [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
 
             // Create countdown message
             let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
             const countdownMsg = document.createElement('div');
             countdownMsg.className = 'message system';
-            countdownMsg.textContent = `Enemy signal detected. [${secondsLeft}] seconds remaining to engage.`;
+            countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until signal jam.`;
             chatMessages.appendChild(countdownMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             game.countdownMsg = countdownMsg;
