@@ -691,7 +691,7 @@
 
             const et = game.currentWave.enemyType;
             await addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
-            await addMessage(`Your mech moves to engage the enemy...`, 'battle');
+            await addMessage(`Your mech moves to engage the enemy...`, 'system');
 
             // Battle loop
             async function runBattle() {
