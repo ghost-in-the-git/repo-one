@@ -490,12 +490,11 @@
             const countdownMsg = document.createElement('div');
             countdownMsg.className = 'message system';
             countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until EMP signal jam.`;
-            addMessage(`Mech awaiting orders...`, 'player');
             chatMessages.appendChild(countdownMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             game.countdownMsg = countdownMsg;
 
-            
+            addMessage(`Mech awaiting orders...`, 'player');
 
             // Update countdown every second
             game.countdownInterval = setInterval(() => {
