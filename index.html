@@ -502,7 +502,7 @@
             game.waveExpireTimer = setTimeout(() => {
                 clearCountdown();
                 if (game.currentWave && !game.inBattle) {
-                    addMessage(`The droids have moved on. Opportunity lost.`, 'system');
+                    addMessage(`Signal lost. Scanning...`, 'system');
                     game.currentWave = null;
                     btnEngage.disabled = true;
                     btnRetreat.disabled = true;
