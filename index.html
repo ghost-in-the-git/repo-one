@@ -405,8 +405,8 @@
                 p.defence += 1;
                 p.combo = Math.min(p.combo + 2, 50); // Cap at 50%
 
-                addMessage(`*** LEVEL UP! You are now Level ${p.level}! ***`, 'levelup');
-                addMessage(`Stats increased! ATK+2, SPD+3, DEF+1, COMBO+2%, MAX HP+10`, 'system');
+                addMessage(`[LEVEL INCREASED TO ${p.level}]`, 'levelup');
+                addMessage(`Stats gained: [ATK+2] [SPD+3] [DEF+1] [COMBO+2%] [MAX HP+10]`, 'system');
                 updateStats();
 
                 // Check for another level up
@@ -479,7 +479,7 @@
             let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
             const countdownMsg = document.createElement('div');
             countdownMsg.className = 'message system';
-            countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until signal jam.`;
+            countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until EMP signal jam.`;
             chatMessages.appendChild(countdownMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             game.countdownMsg = countdownMsg;
@@ -488,7 +488,7 @@
             game.countdownInterval = setInterval(() => {
                 secondsLeft--;
                 if (secondsLeft > 0) {
-                    countdownMsg.textContent = `Enemy signal detected. [${secondsLeft}] seconds remaining to engage.`;
+                    countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until EMP signal jam.`;
                 } else {
                     clearCountdown();
                 }
@@ -584,7 +584,7 @@
 
             // Speed check for extra attack
             if (Math.random() * 100 < p.speed && wave.remaining > 0) {
-                await addMessage(`Your mech moves fast! Extra attack!`, 'system');
+                await addMessage(`[SPEEDBREAKER TRIGGERED]`, 'system');
 
                 // If current enemy is dead, attack next one
                 if (wave.currentEnemy === null) {
@@ -596,11 +596,11 @@
 
                 if (bonusCombo) {
                     bonusDamage *= 2;
-                    await addMessage(`COMBO on bonus attack!`, 'victory');
+                    await addMessage(`[COMBOBREAKER TRIGGERED]`, 'victory');
                 }
 
                 wave.currentEnemy -= bonusDamage;
-                await addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
+                await addMessage(`Breaker strike for ${bonusDamage} damage!`, 'player');
 
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
@@ -627,11 +627,11 @@
                 if (remainingDefence >= et.attack) {
                     // Fully blocked
                     remainingDefence -= et.attack;
-                    await addMessage(`Blocked! (${remainingDefence} DEF remaining)`, 'player');
+                    await addMessage(` [Damage blocked] (${remainingDefence} defence remaining)`, 'player');
                 } else if (remainingDefence > 0) {
                     // Partially blocked
                     const damageTaken = et.attack - remainingDefence;
-                    await addMessage(`DEF absorbs ${remainingDefence}, you take ${damageTaken} damage!`, 'damage');
+                    await addMessage(`Remaining defence absorbs ${remainingDefence} damage, but ${damageTaken} damage is still taken.`, 'damage');
                     remainingDefence = 0;
                     p.hp = Math.max(0, p.hp - damageTaken);
                     updateStats();
@@ -664,13 +664,13 @@
             const xpEarned = wave ? (wave.xpEarned || 0) : 0;
 
             if (victory) {
-                addMessage(`*** VICTORY! All enemies destroyed! ***`, 'victory');
+                addMessage(`[ All hostiles confirmed destroyed ]`, 'victory');
                 game.player.xp += xpEarned;
-                addMessage(`You gained ${xpEarned} XP!`, 'system');
+                addMessage(`Mech gained ${xpEarned} XP.`, 'system');
                 checkLevelUp();
             } else {
-                addMessage(`*** DEFEAT! Your mech has been destroyed! ***`, 'defeat');
-                addMessage(`You gained no XP this battle.`, 'system');
+                addMessage(`Your mech has been confirmed destroyed.`, 'defeat');
+                addMessage(`Systems resetting. 100 XP has been lost.`, 'system');
                 // Respawn with half HP
                 game.player.hp = Math.floor(game.player.maxHp / 2);
             }
@@ -748,7 +748,7 @@
             }
             clearCountdown();
 
-            addMessage(`You choose not to engage. The droids move on...`, 'player');
+            addMessage(`Engagement denied. Live to fight another day.`, 'player');
             game.currentWave = null;
             btnEngage.disabled = true;
             btnRetreat.disabled = true;
