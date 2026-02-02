@@ -583,7 +583,8 @@
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                    await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                    await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'battle');
+                    wave.currentTarget++;
                     wave.currentEnemy = null;
 
                     if (wave.remaining <= 0) {
@@ -591,14 +592,14 @@
                         return;
                     }
                 } else {
-                    await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+                    await addMessage(`${et.name} ${wave.currentTarget} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
                 }
             }
 
             // All remaining enemies attack in sequence
             const enemyDamage = calculateDamage(et.attack, p.defence);
 
-            for (let i = 1; i <= wave.remaining; i++) {
+            for (let i = wave.currentTarget; i <= wave.count; i++) {
                 await addMessage(`${et.name} ${i} attacks!`, 'enemy');
 
                 if (p.defence > 0 && et.attack > p.defence) {
