@@ -457,6 +457,7 @@
                 enemyType: enemyType,
                 count: enemyCount,
                 remaining: enemyCount,
+                currentTarget: 1, // Which enemy we're fighting (1-indexed)
                 currentEnemy: null, // Will hold current enemy's HP in battle
                 turn: 0
             };
@@ -547,7 +548,8 @@
             if (wave.currentEnemy <= 0) {
                 wave.remaining--;
                 wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'battle');
+                wave.currentTarget++;
                 wave.currentEnemy = null;
 
                 if (wave.remaining <= 0) {
@@ -555,7 +557,7 @@
                     return;
                 }
             } else {
-                await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+                await addMessage(`${et.name} ${wave.currentTarget} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
             }
 
             // Speed check for extra attack
