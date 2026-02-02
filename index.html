@@ -554,7 +554,7 @@
             }
 
             wave.turn++;
-            await addMessage(`--- Turn ${wave.turn} ---`, 'system');
+            await addMessage(`[ Turn ${wave.turn} ]`, 'system');
 
             // Player attacks first
             let comboTriggered = Math.random() * 100 < p.combo;
