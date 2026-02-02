@@ -1,1 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mech Battle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0f;
+            color: #00ff88;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            width: 250px;
+            background: #12121a;
+            border-right: 2px solid #00ff88;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Offset chat panel for fixed stats */
+        .chat-panel {
+            margin-left: 250px;
+        }
+
+        .stats-panel h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff8855;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #00ff8833;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .hp-bar-container {
+            margin-top: 20px;
+            background: #1a1a2e;
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .hp-bar {
+            height: 24px;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hp-text {
+            color: #0a0a0f;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .xp-bar-container {
+            margin-top: 10px;
+            background: #1a1a2e;
+            border: 1px solid #4488ff;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .xp-bar {
+            height: 16px;
+            background: linear-gradient(90deg, #4488ff, #2266cc);
+            transition: width 0.3s ease;
+        }
+
+        .xp-label {
+            text-align: center;
+            font-size: 11px;
+            color: #4488ff;
+            margin-top: 4px;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0d0d14;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: #12121a;
+            border-bottom: 2px solid #00ff88;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.system {
+            background: #1a1a2e;
+            border-left: 3px solid #ffaa00;
+            color: #ffaa00;
+            align-self: center;
+            max-width: 90%;
+        }
+
+        .message.enemy {
+            background: #2a1a1a;
+            border-left: 3px solid #ff4444;
+            color: #ff6666;
+        }
+
+        .message.player {
+            background: #1a2a1a;
+            border-left: 3px solid #00ff88;
+            color: #00ff88;
+            align-self: flex-end;
+        }
+
+        .message.battle {
+            background: #1a1a2e;
+            border-left: 3px solid #4488ff;
+            color: #88aaff;
+            font-style: italic;
+        }
+
+        .message.damage {
+            background: #2a1a2a;
+            border-left: 3px solid #ff44aa;
+            color: #ff88cc;
+        }
+
+        .message.victory {
+            background: #1a2a2a;
+            border-left: 3px solid #00ffcc;
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .message.defeat {
+            background: #2a1a1a;
+            border-left: 3px solid #ff0000;
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .message.levelup {
+            background: #2a2a1a;
+            border-left: 3px solid #ffdd00;
+            color: #ffdd00;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Action Panel */
+        .action-panel {
+            padding: 20px;
+            background: #12121a;
+            border-top: 2px solid #00ff88;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 12px 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .action-btn.engage {
+            background: #1a2a1a;
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .action-btn.engage:hover:not(:disabled) {
+            background: #00ff88;
+            color: #0a0a0f;
+            box-shadow: 0 0 20px #00ff8855;
+        }
+
+        .action-btn.retreat {
+            background: #2a1a1a;
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .action-btn.retreat:hover:not(:disabled) {
+            background: #ff4444;
+            color: #0a0a0f;
+            box-shadow: 0 0 20px #ff444455;
+        }
+
+        .timer-display {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #12121a;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #00ff8855;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-panel">
+        <h2>[ MECH STATUS ]</h2>
+
+        <div class="hp-bar-container">
+            <div class="hp-bar" id="hp-bar">
+                <span class="hp-text" id="hp-text">100 / 100</span>
+            </div>
+        </div>
+
+        <div class="xp-bar-container">
+            <div class="xp-bar" id="xp-bar" style="width: 0%"></div>
+        </div>
+        <div class="xp-label" id="xp-label">XP: 0 / 10</div>
+
+        <div style="margin-top: 20px;">
+            <div class="stat-row">
+                <span class="stat-label">Level</span>
+                <span class="stat-value" id="stat-level">1</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Attack</span>
+                <span class="stat-value" id="stat-attack">5</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Speed</span>
+                <span class="stat-value" id="stat-speed">10</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Defence</span>
+                <span class="stat-value" id="stat-defence">3</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Combo</span>
+                <span class="stat-value" id="stat-combo">5%</span>
+            </div>
+        </div>
+
+        <div class="timer-display" id="timer-display">
+            Next wave in: --:--
+        </div>
+    </div>
+
+    <div class="chat-panel">
+        <div class="chat-header">
+            <h1>[ BATTLE LOG ]</h1>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages appear here -->
+        </div>
+
+        <div class="action-panel">
+            <button class="action-btn engage" id="btn-engage" disabled>Engage</button>
+            <button class="action-btn retreat" id="btn-retreat" disabled>Decline</button>
+        </div>
+    </div>
+
+    <script src="enemies.js"></script>
+    <script>
+        // Game State
+        const game = {
+            player: {
+                level: 1,
+                xp: 0,
+                xpToLevel: 10,
+                maxHp: 100,
+                hp: 100,
+                attack: 5,
+                speed: 10,
+                defence: 3,
+                combo: 5
+            },
+            currentWave: null,
+            inBattle: false,
+            battleInterval: null,
+            regenInterval: null,
+            waveTimer: null,
+            nextWaveTime: 0,
+            waveExpireTimer: null,
+            WAVE_INTERVAL: 60000, // 1 minute
+            WAVE_EXPIRE: 60000, // 1 minute to engage
+            REGEN_RATE: 10000 // 1 hp per 10 seconds
+        };
+
+        // DOM Elements
+        const chatMessages = document.getElementById('chat-messages');
+        const btnEngage = document.getElementById('btn-engage');
+        const btnRetreat = document.getElementById('btn-retreat');
+        const timerDisplay = document.getElementById('timer-display');
+
+        // Add message to chat with delay
+        async function addMessage(text, type = 'system') {
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            await new Promise(resolve => setTimeout(resolve, 800));
+        }
+
+        // Update UI
+        function updateStats() {
+            const p = game.player;
+
+            // HP Bar
+            const hpPercent = (p.hp / p.maxHp) * 100;
+            document.getElementById('hp-bar').style.width = `${hpPercent}%`;
+            document.getElementById('hp-text').textContent = `${p.hp} / ${p.maxHp}`;
+
+            // XP Bar
+            const xpPercent = (p.xp / p.xpToLevel) * 100;
+            document.getElementById('xp-bar').style.width = `${xpPercent}%`;
+            document.getElementById('xp-label').textContent = `XP: ${p.xp} / ${p.xpToLevel}`;
+
+            // Stats
+            document.getElementById('stat-level').textContent = p.level;
+            document.getElementById('stat-attack').textContent = p.attack;
+            document.getElementById('stat-speed').textContent = p.speed;
+            document.getElementById('stat-defence').textContent = p.defence;
+            document.getElementById('stat-combo').textContent = `${p.combo}%`;
+        }
+
+        // Level up check
+        function checkLevelUp() {
+            const p = game.player;
+            if (p.xp >= p.xpToLevel) {
+                p.xp -= p.xpToLevel;
+                p.level++;
+                p.xpToLevel = Math.floor(p.xpToLevel * 1.5);
+
+                // Stat increases
+                p.maxHp += 10;
+                p.hp = p.maxHp; // Full heal on level up
+                p.attack += 2;
+                p.speed += 3;
+                p.defence += 1;
+                p.combo = Math.min(p.combo + 2, 50); // Cap at 50%
+
+                addMessage(`*** LEVEL UP! You are now Level ${p.level}! ***`, 'levelup');
+                addMessage(`Stats increased! ATK+2, SPD+3, DEF+1, COMBO+2%, MAX HP+10`, 'system');
+                updateStats();
+
+                // Check for another level up
+                checkLevelUp();
+            }
+        }
+
+        // Select enemy type based on player level and appearance rates
+        function selectEnemyType() {
+            const playerLevel = game.player.level;
+
+            // Filter enemies by level requirement
+            const available = ENEMIES.filter(e => e.minLevel <= playerLevel);
+
+            // Calculate total appearance rate
+            const totalRate = available.reduce((sum, e) => sum + e.appearanceRate, 0);
+
+            // Random selection weighted by appearance rate
+            let roll = Math.random() * totalRate;
+            for (const enemy of available) {
+                roll -= enemy.appearanceRate;
+                if (roll <= 0) {
+                    return enemy;
+                }
+            }
+
+            // Fallback to first available
+            return available[0];
+        }
+
+        // Generate enemy wave
+        function generateWave() {
+            const enemyType = selectEnemyType();
+            const baseEnemies = 3 + game.player.level;
+            const variance = Math.floor(Math.random() * 3) - 1;
+            const enemyCount = Math.max(2, baseEnemies + variance);
+
+            return {
+                enemyType: enemyType,
+                count: enemyCount,
+                remaining: enemyCount,
+                currentEnemy: null, // Will hold current enemy's HP in battle
+                turn: 0
+            };
+        }
+
+        // Spawn new wave
+        function spawnWave() {
+            if (game.inBattle || game.currentWave) return;
+
+            game.currentWave = generateWave();
+            const et = game.currentWave.enemyType;
+            addMessage(`${game.currentWave.count} ${et.name}s have appeared! Do you want to engage them?`, 'enemy');
+            addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'system');
+            addMessage(`You have 1 minute to decide...`, 'system');
+
+            btnEngage.disabled = false;
+            btnRetreat.disabled = false;
+
+            // Set expiration timer
+            if (game.waveExpireTimer) clearTimeout(game.waveExpireTimer);
+            game.waveExpireTimer = setTimeout(() => {
+                if (game.currentWave && !game.inBattle) {
+                    addMessage(`The droids have moved on. Opportunity lost.`, 'enemy');
+                    game.currentWave = null;
+                    btnEngage.disabled = true;
+                    btnRetreat.disabled = true;
+                }
+            }, game.WAVE_EXPIRE);
+        }
+
+        // Start wave timer
+        function startWaveTimer() {
+            game.nextWaveTime = Date.now() + game.WAVE_INTERVAL;
+
+            if (game.waveTimer) clearInterval(game.waveTimer);
+
+            game.waveTimer = setInterval(() => {
+                const remaining = Math.max(0, game.nextWaveTime - Date.now());
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timerDisplay.textContent = `Next wave in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    spawnWave();
+                    startWaveTimer();
+                }
+            }, 1000);
+        }
+
+        // Player attack helper - calculates damage vs enemy defence
+        function calculateDamage(attackStat, defenceStat) {
+            const damage = Math.max(1, attackStat - defenceStat);
+            return damage;
+        }
+
+        // Battle round - player attacks, then all enemies attack in sequence
+        async function battleRound() {
+            const p = game.player;
+            const wave = game.currentWave;
+            const et = wave.enemyType;
+
+            if (!wave || wave.remaining <= 0 || p.hp <= 0) {
+                endBattle();
+                return;
+            }
+
+            // Spawn new enemy if needed
+            if (wave.currentEnemy === null) {
+                wave.currentEnemy = et.hp;
+            }
+
+            wave.turn++;
+            await addMessage(`--- Turn ${wave.turn} ---`, 'system');
+
+            // Player attacks first
+            let comboTriggered = Math.random() * 100 < p.combo;
+            let playerDamage = calculateDamage(p.attack, et.defence);
+
+            if (comboTriggered) {
+                playerDamage *= 2;
+                await addMessage(`COMBO! Double damage!`, 'victory');
+            }
+
+            wave.currentEnemy -= playerDamage;
+            await addMessage(`You attack for ${playerDamage} damage!`, 'player');
+
+            // Check if current enemy destroyed
+            if (wave.currentEnemy <= 0) {
+                wave.remaining--;
+                wave.xpEarned = (wave.xpEarned || 0) + et.xp;
+                await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                wave.currentEnemy = null;
+
+                if (wave.remaining <= 0) {
+                    endBattle(true);
+                    return;
+                }
+            } else {
+                await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+            }
+
+            // Speed check for extra attack
+            if (Math.random() * 100 < p.speed && wave.remaining > 0) {
+                await addMessage(`Your mech moves fast! Extra attack!`, 'system');
+
+                // If current enemy is dead, attack next one
+                if (wave.currentEnemy === null) {
+                    wave.currentEnemy = et.hp;
+                }
+
+                let bonusCombo = Math.random() * 100 < p.combo;
+                let bonusDamage = calculateDamage(p.attack, et.defence);
+
+                if (bonusCombo) {
+                    bonusDamage *= 2;
+                    await addMessage(`COMBO on bonus attack!`, 'victory');
+                }
+
+                wave.currentEnemy -= bonusDamage;
+                await addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
+
+                if (wave.currentEnemy <= 0) {
+                    wave.remaining--;
+                    wave.xpEarned = (wave.xpEarned || 0) + et.xp;
+                    await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                    wave.currentEnemy = null;
+
+                    if (wave.remaining <= 0) {
+                        endBattle(true);
+                        return;
+                    }
+                } else {
+                    await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+                }
+            }
+
+            // All remaining enemies attack in sequence
+            const enemyDamage = calculateDamage(et.attack, p.defence);
+
+            for (let i = 1; i <= wave.remaining; i++) {
+                await addMessage(`${et.name} ${i} attacks!`, 'enemy');
+
+                if (p.defence > 0 && et.attack > p.defence) {
+                    await addMessage(`Your DEF reduces damage!`, 'battle');
+                }
+
+                if (enemyDamage > 0) {
+                    p.hp = Math.max(0, p.hp - enemyDamage);
+                    await addMessage(`You take ${enemyDamage} damage!`, 'damage');
+                    updateStats();
+                } else {
+                    await addMessage(`Blocked!`, 'battle');
+                }
+
+                // Check if player defeated
+                if (p.hp <= 0) {
+                    endBattle(false);
+                    return;
+                }
+            }
+        }
+
+        // End battle
+        function endBattle(victory = false) {
+            game.inBattle = false;
+
+            if (game.battleInterval) {
+                clearInterval(game.battleInterval);
+                game.battleInterval = null;
+            }
+
+            const wave = game.currentWave;
+            const enemiesKilled = wave ? wave.count - wave.remaining : 0;
+            const xpEarned = wave ? (wave.xpEarned || 0) : 0;
+
+            if (victory) {
+                addMessage(`*** VICTORY! All enemies destroyed! ***`, 'victory');
+                game.player.xp += xpEarned;
+                addMessage(`You gained ${xpEarned} XP!`, 'system');
+                checkLevelUp();
+            } else {
+                addMessage(`*** DEFEAT! Your mech has been destroyed! ***`, 'defeat');
+                addMessage(`You gained no XP this battle.`, 'system');
+                // Respawn with half HP
+                game.player.hp = Math.floor(game.player.maxHp / 2);
+            }
+
+            game.currentWave = null;
+            updateStats();
+            startRegen();
+            startWaveTimer();
+        }
+
+        // Start HP regeneration
+        function startRegen() {
+            if (game.regenInterval) clearInterval(game.regenInterval);
+
+            game.regenInterval = setInterval(() => {
+                if (game.inBattle) return;
+
+                if (game.player.hp < game.player.maxHp) {
+                    game.player.hp = Math.min(game.player.maxHp, game.player.hp + 1);
+                    updateStats();
+                } else {
+                    clearInterval(game.regenInterval);
+                    game.regenInterval = null;
+                }
+            }, game.REGEN_RATE);
+        }
+
+        // Utility delay
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Engage battle
+        async function engageBattle() {
+            if (!game.currentWave || game.inBattle) return;
+
+            // Clear expire timer
+            if (game.waveExpireTimer) {
+                clearTimeout(game.waveExpireTimer);
+                game.waveExpireTimer = null;
+            }
+
+            btnEngage.disabled = true;
+            btnRetreat.disabled = true;
+            game.inBattle = true;
+
+            if (game.regenInterval) {
+                clearInterval(game.regenInterval);
+                game.regenInterval = null;
+            }
+
+            const et = game.currentWave.enemyType;
+            await addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
+            await addMessage(`Your mech moves to engage the enemy...`, 'battle');
+
+            // Battle loop
+            async function runBattle() {
+                while (game.inBattle && game.currentWave && game.currentWave.remaining > 0 && game.player.hp > 0) {
+                    await battleRound();
+                }
+            }
+
+            runBattle();
+        }
+
+        // Decline battle
+        function declineBattle() {
+            if (!game.currentWave || game.inBattle) return;
+
+            // Clear expire timer
+            if (game.waveExpireTimer) {
+                clearTimeout(game.waveExpireTimer);
+                game.waveExpireTimer = null;
+            }
+
+            addMessage(`You choose not to engage. The droids move on...`, 'player');
+            game.currentWave = null;
+            btnEngage.disabled = true;
+            btnRetreat.disabled = true;
+        }
+
+        // Event listeners
+        btnEngage.addEventListener('click', engageBattle);
+        btnRetreat.addEventListener('click', declineBattle);
+
+        // Initialize game
+        function init() {
+            addMessage(`=== MECH BATTLE SYSTEM ONLINE ===`, 'system');
+            addMessage(`Your mech is ready for combat, pilot.`, 'system');
+            addMessage(`Enemies will appear periodically. Choose to engage or decline.`, 'system');
+            updateStats();
+
+            // Spawn first wave immediately for testing
+            setTimeout(() => {
+                spawnWave();
+                startWaveTimer();
+            }, 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
