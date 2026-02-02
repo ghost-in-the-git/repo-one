@@ -343,7 +343,9 @@
             regenInterval: null,
             waveTimer: null,
             nextWaveTime: 0,
-            WAVE_INTERVAL: 300000, // 5 minutes
+            waveExpireTimer: null,
+            WAVE_INTERVAL: 60000, // 1 minute
+            WAVE_EXPIRE: 60000, // 1 minute to engage
             REGEN_RATE: 1000 // 1 hp per second
         };
 
@@ -428,9 +430,21 @@
 
             game.currentWave = generateWave();
             addMessage(`${game.currentWave.count} droids have appeared! Do you want to engage them?`, 'enemy');
+            addMessage(`You have 1 minute to decide...`, 'system');
 
             btnEngage.disabled = false;
             btnRetreat.disabled = false;
+
+            // Set expiration timer
+            if (game.waveExpireTimer) clearTimeout(game.waveExpireTimer);
+            game.waveExpireTimer = setTimeout(() => {
+                if (game.currentWave && !game.inBattle) {
+                    addMessage(`The droids have moved on. Opportunity lost.`, 'enemy');
+                    game.currentWave = null;
+                    btnEngage.disabled = true;
+                    btnRetreat.disabled = true;
+                }
+            }, game.WAVE_EXPIRE);
         }
 
         // Start wave timer
@@ -596,6 +610,12 @@
         async function engageBattle() {
             if (!game.currentWave || game.inBattle) return;
 
+            // Clear expire timer
+            if (game.waveExpireTimer) {
+                clearTimeout(game.waveExpireTimer);
+                game.waveExpireTimer = null;
+            }
+
             btnEngage.disabled = true;
             btnRetreat.disabled = true;
             game.inBattle = true;
@@ -623,6 +643,12 @@
         // Decline battle
         function declineBattle() {
             if (!game.currentWave || game.inBattle) return;
+
+            // Clear expire timer
+            if (game.waveExpireTimer) {
+                clearTimeout(game.waveExpireTimer);
+                game.waveExpireTimer = null;
+            }
 
             addMessage(`You choose not to engage. The droids move on...`, 'player');
             game.currentWave = null;
