@@ -597,11 +597,11 @@
                 wave.currentEnemy -= playerDamage;
                 await addMessage(`Mech attacks ${et.name} ${wave.currentTarget} for ${playerDamage} damage.`, 'player');
 
-                // Check if current enemy destroyed
+                // Check if current enemy 
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                    await addMessage(`${et.name} ${wave.currentTarget} destroyed (+${et.xp} XP)`, 'systemblue');
+                    await addMessage(`${et.name} #${wave.currentTarget} destroyed (+${et.xp} XP)`, 'systemblue');
                     wave.currentTarget++;
                     wave.currentEnemy = null;
 
@@ -610,7 +610,7 @@
                         return;
                     }
                 } else {
-                    await addMessage(`${et.name} ${wave.currentTarget} reduced to ${wave.currentEnemy} HP`, 'battle');
+                    await addMessage(`${et.name} #${wave.currentTarget} reduced to ${wave.currentEnemy} HP`, 'enemy');
                 }
             }
 
