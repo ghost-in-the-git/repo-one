@@ -407,7 +407,7 @@
                 p.defence += 1;
                 p.combo = Math.min(p.combo + 2, 50); // Cap at 50%
 
-                addMessage(`[LEVEL INCREASED TO ${p.level}]`, 'levelup');
+                addMessage(`[LEVEL INCREASED TO ${p.level}]`, 'system');
                 addMessage(`Stats gained: [ATK+2] [SPD+3] [DEF+1] [COMBO+2%] [MAX HP+10]`, 'system');
                 updateStats();
 
