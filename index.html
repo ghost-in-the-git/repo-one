@@ -363,7 +363,7 @@
             msg.className = `message ${type}`;
             msg.textContent = text;
             chatMessages.appendChild(msg);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            msg.scrollIntoView({ behavior: 'smooth', block: 'end' });
             await new Promise(resolve => setTimeout(resolve, 800));
         }
 
