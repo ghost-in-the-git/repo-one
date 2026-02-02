@@ -483,8 +483,8 @@
 
             game.currentWave = generateWave();
             const et = game.currentWave.enemyType;
-            addMessage(`${game.currentWave.count} hostile ${et.name}s are within engagement range`, 'enemy');
-            addMessage(` Unit stats: [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
+            addMessage(`A squadron of ${game.currentWave.count} ${et.name}s are within engagement range [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
+            addMessage(`Unit stats: [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
 
             // Create countdown message
             let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
