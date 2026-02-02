@@ -566,7 +566,7 @@
             }
 
             wave.currentEnemy -= playerDamage;
-            await addMessage(`You attack for ${playerDamage} damage!`, 'player');
+            await addMessage(`Mech attacks for ${playerDamage} damage.`, 'player');
 
             // Check if current enemy destroyed
             if (wave.currentEnemy <= 0) {
@@ -597,7 +597,7 @@
                 let bonusDamage = calculateDamage(p.attack, et.defence);
 
                 if (bonusCombo) {
-                    bonusDamage *= 2;
+                    bonusDamage *= 10;
                     await addMessage(`[COMBOBREAKER TRIGGERED]`, 'victory');
                 }
 
@@ -640,7 +640,7 @@
                 } else {
                     // No defence left
                     p.hp = Math.max(0, p.hp - et.attack);
-                    await addMessage(`You take ${et.attack} damage!`, 'damage');
+                    await addMessage(`Mech takes ${et.attack} damage.`, 'player');
                     updateStats();
                 }
 
@@ -666,13 +666,13 @@
             const xpEarned = wave ? (wave.xpEarned || 0) : 0;
 
             if (victory) {
-                addMessage(`[ All hostiles confirmed destroyed ]`, 'victory');
+                addMessage(`[ All hostiles confirmed destroyed ]`, 'system');
                 game.player.xp += xpEarned;
                 addMessage(`Mech gained ${xpEarned} XP.`, 'system');
                 checkLevelUp();
             } else {
-                addMessage(`Your mech has been confirmed destroyed.`, 'defeat');
-                addMessage(`Systems resetting. 100 XP has been lost.`, 'system');
+                addMessage(`Your mech has been confirmed destroyed.`, 'system');
+                addMessage(`Systems resetting.`, 'system');
                 // Respawn with half HP
                 game.player.hp = Math.floor(game.player.maxHp / 2);
             }
