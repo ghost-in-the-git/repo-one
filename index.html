@@ -633,7 +633,7 @@
                 } else if (remainingDefence > 0) {
                     // Partially blocked
                     const damageTaken = et.attack - remainingDefence;
-                    await addMessage(`Remaining defence absorbs ${remainingDefence} damage, but ${damageTaken} damage is still taken.`, 'damage');
+                    await addMessage(`Remaining defence absorbs ${remainingDefence} damage, but ${damageTaken} damage is still taken.`, 'player');
                     remainingDefence = 0;
                     p.hp = Math.max(0, p.hp - damageTaken);
                     updateStats();
