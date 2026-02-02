@@ -345,7 +345,9 @@
             nextWaveTime: 0,
             waveExpireTimer: null,
             WAVE_INTERVAL: 60000, // 1 minute
-            WAVE_EXPIRE: 30000, // 1 minute to engage
+            WAVE_EXPIRE: 30000, // 30 seconds to engage
+            countdownInterval: null,
+            countdownMsg: null,
             REGEN_RATE: 10000 // 1 hp per 10 seconds
         };
 
@@ -452,6 +454,18 @@
             };
         }
 
+        // Clear countdown timer
+        function clearCountdown() {
+            if (game.countdownInterval) {
+                clearInterval(game.countdownInterval);
+                game.countdownInterval = null;
+            }
+            if (game.countdownMsg) {
+                game.countdownMsg.remove();
+                game.countdownMsg = null;
+            }
+        }
+
         // Spawn new wave
         function spawnWave() {
             if (game.inBattle || game.currentWave) return;
@@ -460,7 +474,25 @@
             const et = game.currentWave.enemyType;
             addMessage(`${game.currentWave.count} ${et.name}s detected!`, 'enemy');
             addMessage(`[ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
-            addMessage(`Do you want to engage them? You have 30 seconds to decide...`, 'system');
+
+            // Create countdown message
+            let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
+            const countdownMsg = document.createElement('div');
+            countdownMsg.className = 'message system';
+            countdownMsg.textContent = `Do you want to engage them? You have [${secondsLeft}] seconds to decide...`;
+            chatMessages.appendChild(countdownMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            game.countdownMsg = countdownMsg;
+
+            // Update countdown every second
+            game.countdownInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft > 0) {
+                    countdownMsg.textContent = `Do you want to engage them? You have [${secondsLeft}] seconds to decide...`;
+                } else {
+                    clearCountdown();
+                }
+            }, 1000);
 
             btnEngage.disabled = false;
             btnRetreat.disabled = false;
@@ -468,6 +500,7 @@
             // Set expiration timer
             if (game.waveExpireTimer) clearTimeout(game.waveExpireTimer);
             game.waveExpireTimer = setTimeout(() => {
+                clearCountdown();
                 if (game.currentWave && !game.inBattle) {
                     addMessage(`The droids have moved on. Opportunity lost.`, 'system');
                     game.currentWave = null;
@@ -674,11 +707,12 @@
         async function engageBattle() {
             if (!game.currentWave || game.inBattle) return;
 
-            // Clear expire timer
+            // Clear expire timer and countdown
             if (game.waveExpireTimer) {
                 clearTimeout(game.waveExpireTimer);
                 game.waveExpireTimer = null;
             }
+            clearCountdown();
 
             btnEngage.disabled = true;
             btnRetreat.disabled = true;
@@ -707,11 +741,12 @@
         function declineBattle() {
             if (!game.currentWave || game.inBattle) return;
 
-            // Clear expire timer
+            // Clear expire timer and countdown
             if (game.waveExpireTimer) {
                 clearTimeout(game.waveExpireTimer);
                 game.waveExpireTimer = null;
             }
+            clearCountdown();
 
             addMessage(`You choose not to engage. The droids move on...`, 'player');
             game.currentWave = null;
