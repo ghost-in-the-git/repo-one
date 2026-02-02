@@ -193,24 +193,24 @@
 
         /* Action Panel */
         .action-panel {
-            padding: 20px;
-            background: #12121a;
-            border-top: 2px solid #00ff88;
+            padding: 15px 0;
             display: flex;
-            gap: 15px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .action-btn {
-            padding: 12px 30px;
+            padding: 12px 20px;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             border: 2px solid;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-transform: uppercase;
+            width: 100%;
         }
 
         .action-btn:disabled {
@@ -309,16 +309,16 @@
         <div class="timer-display" id="timer-display">
             Next wave in: --:--
         </div>
+
+        <div class="action-panel">
+            <button class="action-btn engage" id="btn-engage" disabled>Engage</button>
+            <button class="action-btn retreat" id="btn-retreat" disabled>Decline</button>
+        </div>
     </div>
 
     <div class="chat-panel">
         <div class="chat-messages" id="chat-messages">
             <!-- Messages appear here -->
-        </div>
-
-        <div class="action-panel">
-            <button class="action-btn engage" id="btn-engage" disabled>Engage</button>
-            <button class="action-btn retreat" id="btn-retreat" disabled>Decline</button>
         </div>
     </div>
 
