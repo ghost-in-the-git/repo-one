@@ -446,7 +446,8 @@
                 enemyType: enemyType,
                 count: enemyCount,
                 remaining: enemyCount,
-                currentEnemy: null // Will hold current enemy's HP in battle
+                currentEnemy: null, // Will hold current enemy's HP in battle
+                turn: 0
             };
         }
 
@@ -516,7 +517,8 @@
                 wave.currentEnemy = et.hp;
             }
 
-            addMessage(`--- Round: ${wave.remaining} ${et.name}s remaining ---`, 'system');
+            wave.turn++;
+            addMessage(`--- Turn ${wave.turn} ---`, 'system');
 
             // Player attacks first
             await delay(400);
