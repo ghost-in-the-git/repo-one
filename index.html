@@ -618,7 +618,7 @@
             let remainingDefence = p.defence; // Defence pool for this turn
 
             for (let i = wave.currentTarget; i <= wave.count; i++) {
-                await addMessage(`${et.name} ${i} attacks for ${et.attack} damage!`, 'enemy');
+                await addMessage(`${et.name} #${i} attacks mech for ${et.attack} damage.`, 'enemy');
 
                 if (remainingDefence >= et.attack) {
                     // Fully blocked
