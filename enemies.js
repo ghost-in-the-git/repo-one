@@ -18,7 +18,7 @@ const ENEMIES = [
         name: "Droid Drone",
         attack: 1,
         defence: 0,
-        hp: 1,
+        hp: 10,
         xp: 1,
         appearanceRate: 50,
         minLevel: 1
@@ -30,7 +30,7 @@ const ENEMIES = [
         hp: 2,
         xp: 3,
         appearanceRate: 30,
-        minLevel: 1
+        minLevel: 10
     },
     {
         name: "Droid Enforcer",
@@ -39,7 +39,7 @@ const ENEMIES = [
         hp: 5,
         xp: 8,
         appearanceRate: 15,
-        minLevel: 1
+        minLevel: 10
     },
     {
         name: "Droid Sentinel",
@@ -48,7 +48,7 @@ const ENEMIES = [
         hp: 10,
         xp: 20,
         appearanceRate: 8,
-        minLevel: 1
+        minLevel: 10
     },
     {
         name: "Droid Destroyer",
@@ -57,6 +57,6 @@ const ENEMIES = [
         hp: 20,
         xp: 50,
         appearanceRate: 3,
-        minLevel: 1
+        minLevel: 10
     }
 ];
