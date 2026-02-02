@@ -597,21 +597,27 @@
             }
 
             // All remaining enemies attack in sequence
-            const enemyDamage = calculateDamage(et.attack, p.defence);
+            let remainingDefence = p.defence; // Defence pool for this turn
 
             for (let i = wave.currentTarget; i <= wave.count; i++) {
                 await addMessage(`${et.name} ${i} attacks!`, 'enemy');
 
-                if (p.defence > 0 && et.attack > p.defence) {
-                    await addMessage(`Your DEF reduces damage!`, 'battle');
-                }
-
-                if (enemyDamage > 0) {
-                    p.hp = Math.max(0, p.hp - enemyDamage);
-                    await addMessage(`You take ${enemyDamage} damage!`, 'damage');
+                if (remainingDefence >= et.attack) {
+                    // Fully blocked
+                    remainingDefence -= et.attack;
+                    await addMessage(`Blocked! (${remainingDefence} DEF remaining)`, 'battle');
+                } else if (remainingDefence > 0) {
+                    // Partially blocked
+                    const damageTaken = et.attack - remainingDefence;
+                    await addMessage(`DEF absorbs ${remainingDefence}, you take ${damageTaken} damage!`, 'damage');
+                    remainingDefence = 0;
+                    p.hp = Math.max(0, p.hp - damageTaken);
                     updateStats();
                 } else {
-                    await addMessage(`Blocked!`, 'battle');
+                    // No defence left
+                    p.hp = Math.max(0, p.hp - et.attack);
+                    await addMessage(`You take ${et.attack} damage!`, 'damage');
+                    updateStats();
                 }
 
                 // Check if player defeated
