@@ -200,6 +200,52 @@
             text-align: center;
         }
 
+        /* Equipment Panel */
+        .equipment-panel {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #00ff8844;
+        }
+
+        .equipment-panel h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .equip-slot {
+            margin-bottom: 8px;
+        }
+
+        .equip-slot label {
+            display: block;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .equip-slot select {
+            width: 100%;
+            padding: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #1a1a2e;
+            color: #00ff88;
+            border: 1px solid #00ff8855;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .equip-slot select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .equip-slot select:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
         /* Action Panel */
         .action-panel {
             padding: 15px 0;
@@ -320,6 +366,30 @@
             Next wave in: --:--
         </div>
 
+        <div class="equipment-panel">
+            <h4>[ EQUIPMENT ]</h4>
+            <div class="equip-slot">
+                <label>Body</label>
+                <select id="equip-body"><option value="">-- None --</option></select>
+            </div>
+            <div class="equip-slot">
+                <label>Legs</label>
+                <select id="equip-legs"><option value="">-- None --</option></select>
+            </div>
+            <div class="equip-slot">
+                <label>Arms</label>
+                <select id="equip-arms"><option value="">-- None --</option></select>
+            </div>
+            <div class="equip-slot">
+                <label>Weapon</label>
+                <select id="equip-weapon"><option value="">-- None --</option></select>
+            </div>
+            <div class="equip-slot">
+                <label>Systems Chip</label>
+                <select id="equip-chip"><option value="">-- None --</option></select>
+            </div>
+        </div>
+
         <div class="action-panel">
             <button class="action-btn engage" id="btn-engage" disabled>Engage</button>
             <button class="action-btn retreat" id="btn-retreat" disabled>Decline</button>
@@ -334,10 +404,18 @@
     </div>
 
     <script src="enemies.js"></script>
+    <script src="items.js"></script>
     <script>
         // Game State
         const game = {
             player: {
+                // Base stats (without equipment)
+                baseMaxHp: 100,
+                baseAttack: 5,
+                baseSpeed: 10,
+                baseDefence: 3,
+                baseCombo: 5,
+                // Current stats (with equipment)
                 level: 1,
                 xp: 0,
                 xpToLevel: 10,
@@ -347,6 +425,16 @@
                 speed: 10,
                 defence: 3,
                 combo: 5
+            },
+            // Inventory: array of item objects
+            inventory: [],
+            // Equipped items by slot (stores item name or null)
+            equipment: {
+                body: null,
+                legs: null,
+                arms: null,
+                weapon: null,
+                chip: null
             },
             currentWave: null,
             inBattle: false,
@@ -400,6 +488,115 @@
             document.getElementById('stat-combo').textContent = `${p.combo}%`;
         }
 
+        // Recalculate stats from base + equipment
+        function recalculateStats() {
+            const p = game.player;
+            const oldMaxHp = p.maxHp;
+
+            // Start with base stats
+            p.maxHp = p.baseMaxHp;
+            p.attack = p.baseAttack;
+            p.speed = p.baseSpeed;
+            p.defence = p.baseDefence;
+            p.combo = p.baseCombo;
+
+            // Add equipment bonuses
+            for (const slot in game.equipment) {
+                const itemName = game.equipment[slot];
+                if (itemName) {
+                    const item = ITEMS.find(i => i.name === itemName);
+                    if (item && item.stats) {
+                        if (item.stats.hp) p.maxHp += item.stats.hp;
+                        if (item.stats.attack) p.attack += item.stats.attack;
+                        if (item.stats.speed) p.speed += item.stats.speed;
+                        if (item.stats.defence) p.defence += item.stats.defence;
+                        if (item.stats.combo) p.combo += item.stats.combo;
+                    }
+                }
+            }
+
+            // Adjust current HP if max HP changed
+            if (p.maxHp > oldMaxHp) {
+                p.hp += (p.maxHp - oldMaxHp);
+            } else if (p.hp > p.maxHp) {
+                p.hp = p.maxHp;
+            }
+
+            updateStats();
+        }
+
+        // Update equipment dropdowns with inventory items
+        function updateEquipmentUI() {
+            const slots = ['body', 'legs', 'arms', 'weapon', 'chip'];
+
+            slots.forEach(slot => {
+                const select = document.getElementById(`equip-${slot}`);
+                const currentValue = game.equipment[slot] || '';
+
+                // Clear and rebuild options
+                select.innerHTML = '<option value="">-- None --</option>';
+
+                // Add items from inventory that match this slot
+                const slotItems = game.inventory.filter(item => item.type === slot);
+                slotItems.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.name;
+                    option.textContent = item.name;
+                    if (item.name === currentValue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Handle equipment change
+        function onEquipmentChange(slot, itemName) {
+            if (game.inBattle) return; // Can't change during battle
+
+            game.equipment[slot] = itemName || null;
+            recalculateStats();
+        }
+
+        // Lock/unlock equipment dropdowns
+        function setEquipmentLocked(locked) {
+            const slots = ['body', 'legs', 'arms', 'weapon', 'chip'];
+            slots.forEach(slot => {
+                document.getElementById(`equip-${slot}`).disabled = locked;
+            });
+        }
+
+        // Add item to inventory
+        function addItemToInventory(item) {
+            game.inventory.push(item);
+            updateEquipmentUI();
+        }
+
+        // Get random item drop from defeated enemy
+        function getRandomItemDrop(enemyName) {
+            // Filter items that can drop from this enemy
+            const droppableItems = ITEMS.filter(item => {
+                if (item.droppedBy.length === 0) return true; // Drops from any enemy
+                return item.droppedBy.includes(enemyName);
+            });
+
+            if (droppableItems.length === 0) return null;
+
+            // Calculate total drop rate
+            const totalRate = droppableItems.reduce((sum, item) => sum + item.dropRate, 0);
+
+            // Random selection
+            let roll = Math.random() * totalRate;
+            for (const item of droppableItems) {
+                roll -= item.dropRate;
+                if (roll <= 0) {
+                    return item;
+                }
+            }
+
+            return droppableItems[0];
+        }
+
         // Level up check
         function checkLevelUp() {
             const p = game.player;
@@ -408,13 +605,16 @@
                 p.level++;
                 p.xpToLevel = Math.floor(p.xpToLevel * 1.5);
 
-                // Stat increases
-                p.maxHp += 10;
-                p.hp = p.maxHp; // Full heal on level up
-                p.attack += 2;
-                p.speed += 3;
-                p.defence += 1;
-                p.combo = Math.min(p.combo + 2, 50); // Cap at 50%
+                // Increase BASE stats
+                p.baseMaxHp += 10;
+                p.baseAttack += 2;
+                p.baseSpeed += 3;
+                p.baseDefence += 1;
+                p.baseCombo = Math.min(p.baseCombo + 2, 50);
+
+                // Recalculate with equipment and full heal
+                recalculateStats();
+                p.hp = p.maxHp;
 
                 addMessage(`[LEVEL INCREASED TO ${p.level}]`, 'system');
                 addMessage(`Stats gained: [ATK+2] [SPD+3] [DEF+1] [COMBO+2%] [MAX HP+10]`, 'system');
@@ -650,6 +850,7 @@
         // End battle
         function endBattle(victory = false) {
             game.inBattle = false;
+            setEquipmentLocked(false); // Unlock equipment
 
             if (game.battleInterval) {
                 clearInterval(game.battleInterval);
@@ -659,11 +860,22 @@
             const wave = game.currentWave;
             const enemiesKilled = wave ? wave.count - wave.remaining : 0;
             const xpEarned = wave ? (wave.xpEarned || 0) : 0;
+            const enemyType = wave ? wave.enemyType.name : null;
 
             if (victory) {
                 addMessage(`[ All hostiles confirmed destroyed ]`, 'system');
                 game.player.xp += xpEarned;
                 addMessage(`Mech gained ${xpEarned} XP.`, 'system');
+
+                // Drop random item
+                if (enemyType) {
+                    const droppedItem = getRandomItemDrop(enemyType);
+                    if (droppedItem) {
+                        addItemToInventory(droppedItem);
+                        addMessage(`Mech found item: ${droppedItem.name} [${ITEM_TYPES[droppedItem.type]}]`, 'victory');
+                    }
+                }
+
                 checkLevelUp();
             } else {
                 addMessage(`Your mech has been confirmed destroyed.`, 'system');
@@ -714,6 +926,7 @@
             btnEngage.disabled = true;
             btnRetreat.disabled = true;
             game.inBattle = true;
+            setEquipmentLocked(true); // Lock equipment during battle
 
             if (game.regenInterval) {
                 clearInterval(game.regenInterval);
@@ -757,6 +970,15 @@
 
         // Initialize game
         function init() {
+            // Set up equipment dropdown event listeners
+            const slots = ['body', 'legs', 'arms', 'weapon', 'chip'];
+            slots.forEach(slot => {
+                document.getElementById(`equip-${slot}`).addEventListener('change', (e) => {
+                    onEquipmentChange(slot, e.target.value);
+                });
+            });
+            updateEquipmentUI();
+
             addMessage(`============================================`, 'system');
             addMessage(`=== C O M B O B R E A K E R  O N L I N E ===`, 'system');
             addMessage(`============================================`, 'system');
