@@ -563,10 +563,10 @@
             let attackCount = speedTriggered ? 2 : 1;
 
             if (speedTriggered) {
-                await addMessage(`[SPEEDBREAKER TRIGGERED]`, 'system');
+                await addMessage(`[SPEEDBREAKER TRIGGERED]`, 'player');
             }
             if (comboTriggered) {
-                await addMessage(`[COMBOBREAKER TRIGGERED]`, 'victory');
+                await addMessage(`[COMBOBREAKER TRIGGERED]`, 'player');
             }
 
             // Calculate damage (combo applies to all attacks this turn)
