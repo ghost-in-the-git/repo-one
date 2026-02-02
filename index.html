@@ -557,54 +557,39 @@
             wave.turn++;
             await addMessage(`[ Turn ${wave.turn} ]`, 'system');
 
-            // Player attacks first
+            // Determine attacks this turn
+            let speedTriggered = Math.random() * 100 < p.speed;
             let comboTriggered = Math.random() * 100 < p.combo;
-            let playerDamage = calculateDamage(p.attack, et.defence);
+            let attackCount = speedTriggered ? 2 : 1;
 
+            if (speedTriggered) {
+                await addMessage(`[SPEEDBREAKER TRIGGERED]`, 'system');
+            }
+            if (comboTriggered) {
+                await addMessage(`[COMBOBREAKER TRIGGERED]`, 'victory');
+            }
+
+            // Calculate damage (combo applies to all attacks this turn)
+            let playerDamage = calculateDamage(p.attack, et.defence);
             if (comboTriggered) {
                 playerDamage *= 2;
-                await addMessage(`COMBO! Double damage!`, 'victory');
             }
 
-            wave.currentEnemy -= playerDamage;
-            await addMessage(`Mech attacks for ${playerDamage} damage.`, 'player');
-
-            // Check if current enemy destroyed
-            if (wave.currentEnemy <= 0) {
-                wave.remaining--;
-                wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'battle');
-                wave.currentTarget++;
-                wave.currentEnemy = null;
-
-                if (wave.remaining <= 0) {
-                    endBattle(true);
-                    return;
-                }
-            } else {
-                await addMessage(`${et.name} ${wave.currentTarget} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
-            }
-
-            // Speed check for extra attack
-            if (Math.random() * 100 < p.speed && wave.remaining > 0) {
-                await addMessage(`[SPEEDBREAKER TRIGGERED]`, 'system');
-
-                // If current enemy is dead, attack next one
+            // Perform attacks
+            for (let atk = 1; atk <= attackCount; atk++) {
+                // If current enemy is dead, target next one
                 if (wave.currentEnemy === null) {
+                    if (wave.remaining <= 0) {
+                        endBattle(true);
+                        return;
+                    }
                     wave.currentEnemy = et.hp;
                 }
 
-                let bonusCombo = Math.random() * 100 < p.combo;
-                let bonusDamage = calculateDamage(p.attack, et.defence);
+                wave.currentEnemy -= playerDamage;
+                await addMessage(`Mech attacks for ${playerDamage} damage.`, 'player');
 
-                if (bonusCombo) {
-                    bonusDamage *= 10;
-                    await addMessage(`[COMBOBREAKER TRIGGERED]`, 'victory');
-                }
-
-                wave.currentEnemy -= bonusDamage;
-                await addMessage(`Breaker strike for ${bonusDamage} damage!`, 'player');
-
+                // Check if current enemy destroyed
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
