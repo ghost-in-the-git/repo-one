@@ -483,7 +483,7 @@
 
             game.currentWave = generateWave();
             const et = game.currentWave.enemyType;
-            addMessage(`${game.currentWave.count} hostile [${et.name}] are within engagement range`, 'enemy');
+            addMessage(`${game.currentWave.count} hostile ${et.name}s are within engagement range`, 'enemy');
             addMessage(` Unit stats: [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
 
             // Create countdown message
@@ -618,7 +618,7 @@
             let remainingDefence = p.defence; // Defence pool for this turn
 
             for (let i = wave.currentTarget; i <= wave.count; i++) {
-                await addMessage(`${et.name} #${i} attacks mech for ${et.attack} damage.`, 'enemy');
+                await addMessage(`${et.name} #${i} attacks Mech for ${et.attack} damage.`, 'enemy');
 
                 if (remainingDefence >= et.attack) {
                     // Fully blocked
