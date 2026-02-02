@@ -605,7 +605,7 @@
                 if (remainingDefence >= et.attack) {
                     // Fully blocked
                     remainingDefence -= et.attack;
-                    await addMessage(`Blocked! (${remainingDefence} DEF remaining)`, 'battle');
+                    await addMessage(`Blocked! (${remainingDefence} DEF remaining)`, 'player');
                 } else if (remainingDefence > 0) {
                     // Partially blocked
                     const damageTaken = et.attack - remainingDefence;
