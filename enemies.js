@@ -15,22 +15,22 @@
 
 const ENEMIES = [
     {
-        name: "Droid Drone",
+        name: "Lurker",
         attack: 1,
         defence: 0,
-        hp: 10,
+        hp: 6,
         xp: 1,
         appearanceRate: 50,
         minLevel: 1
     },
     {
-        name: "Droid Scout",
+        name: "Heavy Lurker",
         attack: 2,
         defence: 1,
-        hp: 2,
-        xp: 3,
+        hp: 10,
+        xp: 1,
         appearanceRate: 30,
-        minLevel: 10
+        minLevel: 1
     },
     {
         name: "Droid Enforcer",
