@@ -595,7 +595,7 @@
                 }
 
                 wave.currentEnemy -= playerDamage;
-                await addMessage(`Mech attacks ${et.name} ${wave.currentTarget} for ${playerDamage} damage.`, 'player');
+                await addMessage(`Mech attacks ${et.name} #${wave.currentTarget} for ${playerDamage} damage.`, 'player');
 
                 // Check if current enemy 
                 if (wave.currentEnemy <= 0) {
