@@ -484,22 +484,24 @@
             game.currentWave = generateWave();
             const et = game.currentWave.enemyType;
             addMessage(`A squadron of ${game.currentWave.count} ${et.name}s are within engagement range [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
-            addMessage(`Unit stats: [ATK:${et.attack} DEF:${et.defence} HP:${et.hp}]`, 'enemy');
 
             // Create countdown message
             let secondsLeft = Math.floor(game.WAVE_EXPIRE / 1000);
             const countdownMsg = document.createElement('div');
             countdownMsg.className = 'message system';
             countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until EMP signal jam.`;
+            addMessage(`Mech awaiting orders...`, 'player');
             chatMessages.appendChild(countdownMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             game.countdownMsg = countdownMsg;
+
+            
 
             // Update countdown every second
             game.countdownInterval = setInterval(() => {
                 secondsLeft--;
                 if (secondsLeft > 0) {
-                    countdownMsg.textContent = `Enemy location locked [${secondsLeft}] seconds until EMP signal jam.`;
+                    countdownMsg.textContent = `Enemy signal locked. [${secondsLeft}] seconds until signal loss.`;
                 } else {
                     clearCountdown();
                 }
