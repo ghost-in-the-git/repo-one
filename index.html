@@ -593,7 +593,7 @@
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                    await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'battle');
+                    await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'system');
                     wave.currentTarget++;
                     wave.currentEnemy = null;
 
