@@ -500,7 +500,7 @@
             return damage;
         }
 
-        // Battle round - fight one enemy at a time
+        // Battle round - player attacks, then all enemies attack in sequence
         async function battleRound() {
             const p = game.player;
             const wave = game.currentWave;
@@ -514,35 +514,12 @@
             // Spawn new enemy if needed
             if (wave.currentEnemy === null) {
                 wave.currentEnemy = et.hp;
-                addMessage(`--- ${et.name} ${wave.count - wave.remaining + 1} of ${wave.count} ---`, 'system');
             }
 
-            // Enemy attacks first
+            addMessage(`--- Round: ${wave.remaining} ${et.name}s remaining ---`, 'system');
+
+            // Player attacks first
             await delay(400);
-            const enemyDamage = calculateDamage(et.attack, p.defence);
-
-            addMessage(`${et.name} attacks!`, 'enemy');
-
-            if (p.defence > 0) {
-                addMessage(`Your DEF reduces damage!`, 'battle');
-            }
-
-            if (enemyDamage > 0) {
-                p.hp = Math.max(0, p.hp - enemyDamage);
-                addMessage(`You take ${enemyDamage} damage!`, 'damage');
-                updateStats();
-            }
-
-            // Check if player defeated
-            if (p.hp <= 0) {
-                await delay(500);
-                endBattle(false);
-                return;
-            }
-
-            await delay(400);
-
-            // Player attacks
             let comboTriggered = Math.random() * 100 < p.combo;
             let playerDamage = calculateDamage(p.attack, et.defence);
 
@@ -552,7 +529,6 @@
             }
 
             wave.currentEnemy -= playerDamage;
-
             addMessage(`You attack for ${playerDamage} damage!`, 'player');
 
             // Check if current enemy destroyed
@@ -560,7 +536,7 @@
                 wave.remaining--;
                 wave.xpEarned = (wave.xpEarned || 0) + et.xp;
                 addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
-                wave.currentEnemy = null; // Next round spawns new enemy
+                wave.currentEnemy = null;
 
                 if (wave.remaining <= 0) {
                     await delay(500);
@@ -579,7 +555,6 @@
                 // If current enemy is dead, attack next one
                 if (wave.currentEnemy === null) {
                     wave.currentEnemy = et.hp;
-                    addMessage(`--- ${et.name} ${wave.count - wave.remaining + 1} of ${wave.count} ---`, 'system');
                 }
 
                 let bonusCombo = Math.random() * 100 < p.combo;
@@ -591,7 +566,6 @@
                 }
 
                 wave.currentEnemy -= bonusDamage;
-
                 addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
 
                 if (wave.currentEnemy <= 0) {
@@ -610,7 +584,37 @@
                 }
             }
 
-            await delay(600);
+            await delay(400);
+
+            // All remaining enemies attack in sequence
+            const enemyDamage = calculateDamage(et.attack, p.defence);
+
+            for (let i = 1; i <= wave.remaining; i++) {
+                addMessage(`${et.name} ${i} attacks!`, 'enemy');
+
+                if (p.defence > 0 && et.attack > p.defence) {
+                    addMessage(`Your DEF reduces damage!`, 'battle');
+                }
+
+                if (enemyDamage > 0) {
+                    p.hp = Math.max(0, p.hp - enemyDamage);
+                    addMessage(`You take ${enemyDamage} damage!`, 'damage');
+                    updateStats();
+                } else {
+                    addMessage(`Blocked!`, 'battle');
+                }
+
+                // Check if player defeated
+                if (p.hp <= 0) {
+                    await delay(500);
+                    endBattle(false);
+                    return;
+                }
+
+                await delay(300);
+            }
+
+            await delay(400);
         }
 
         // End battle
