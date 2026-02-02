@@ -39,7 +39,7 @@ const ENEMIES = [
         hp: 5,
         xp: 8,
         appearanceRate: 15,
-        minLevel: 2
+        minLevel: 1
     },
     {
         name: "Droid Sentinel",
@@ -48,7 +48,7 @@ const ENEMIES = [
         hp: 10,
         xp: 20,
         appearanceRate: 8,
-        minLevel: 3
+        minLevel: 1
     },
     {
         name: "Droid Destroyer",
@@ -57,6 +57,6 @@ const ENEMIES = [
         hp: 20,
         xp: 50,
         appearanceRate: 3,
-        minLevel: 5
+        minLevel: 1
     }
 ];
