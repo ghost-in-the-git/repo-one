@@ -144,6 +144,14 @@
             max-width: 90%;
         }
 
+        .message.systemblue {
+            background: none;
+            border: none;
+            color: #0000ff;
+            align-self: center;
+            max-width: 90%;
+        }
+
         .message.enemy {
             background: #2a1a1a;
             border-left: 3px solid #ff4444;
@@ -593,7 +601,7 @@
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                    await addMessage(`${et.name} ${wave.currentTarget} destroyed! (+${et.xp} XP)`, 'system');
+                    await addMessage(`${et.name} ${wave.currentTarget} destroyed (+${et.xp} XP)`, 'systemblue');
                     wave.currentTarget++;
                     wave.currentEnemy = null;
 
