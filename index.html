@@ -560,7 +560,7 @@
 
             // Speed check for extra attack
             if (Math.random() * 100 < p.speed && wave.remaining > 0) {
-                await addMessage(`Your mech moves fast! Extra attack!`, 'system');
+                await addMessage(`Mech speed trigger!`, 'system');
 
                 // If current enemy is dead, attack next one
                 if (wave.currentEnemy === null) {
@@ -693,7 +693,7 @@
 
             const et = game.currentWave.enemyType;
             await addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
-            await addMessage(`Your mech moves to engage the enemy...`, 'battle');
+            await addMessage(`You move to engage the enemy...`, 'battle');
 
             // Battle loop
             async function runBattle() {
@@ -727,9 +727,25 @@
 
         // Initialize game
         function init() {
-            addMessage(`=== MECH BATTLE SYSTEM ONLINE ===`, 'system');
-            addMessage(`Your mech is ready for combat, pilot.`, 'system');
-            addMessage(`Enemies will appear periodically. Choose to engage or decline.`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`===-- - C O M B O B R E A K E R V1.1.00 S Y S T E M S O N L I N E - --===`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`Your Model.X combobreaker remote mech is ready for combat BreakerPilot 72632`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`M I S S I O N: Scout droid airspace.`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`A L E R T: Heavy resistence, request engagement V1.1.00 protocols`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`[] Engagement Protocols Approved [Autopilot Deactivated] >< BreakerPilot Command Key Required []`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`[K E Y //::X2Y***_***_***_***_***_LZ7`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`BreakerPilot Command Key Accepted.`, 'system');
+            addMessage(`- - -`, 'system');
+            addMessage(`Engagement logic GUI now available. [Engage] or [Decline]`, 'system');
+            addMessage(`- - -`, 'system');
             updateStats();
 
             // Spawn first wave immediately for testing
