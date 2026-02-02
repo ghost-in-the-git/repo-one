@@ -466,7 +466,7 @@
             }, 1000);
         }
 
-        // Battle round
+        // Battle round - fight one droid at a time
         async function battleRound() {
             const p = game.player;
             const wave = game.currentWave;
@@ -476,62 +476,15 @@
                 return;
             }
 
-            // Player attacks
-            let damage = p.attack;
-            let comboTriggered = Math.random() * 100 < p.combo;
+            addMessage(`--- Droid ${wave.count - wave.hp + 1} of ${wave.count} ---`, 'system');
 
-            if (comboTriggered) {
-                damage *= 2;
-                addMessage(`COMBO! Your attack power doubles!`, 'victory');
-            }
-
-            const actualDamage = Math.min(damage, wave.hp);
-            wave.hp -= actualDamage;
-
-            addMessage(`You attack for ${actualDamage} damage!`, 'player');
-            addMessage(`${actualDamage} droids destroyed!`, 'battle');
-
-            // Check if wave defeated
-            if (wave.hp <= 0) {
-                await delay(500);
-                endBattle(true);
-                return;
-            }
-
-            // Speed check for extra attack
-            if (Math.random() * 100 < p.speed) {
-                addMessage(`Your mech moves fast! Extra attack!`, 'system');
-                await delay(500);
-
-                let bonusDamage = p.attack;
-                let bonusCombo = Math.random() * 100 < p.combo;
-
-                if (bonusCombo) {
-                    bonusDamage *= 2;
-                    addMessage(`COMBO on bonus attack!`, 'victory');
-                }
-
-                const bonusActual = Math.min(bonusDamage, wave.hp);
-                wave.hp -= bonusActual;
-
-                addMessage(`Bonus attack deals ${bonusActual} damage!`, 'player');
-                addMessage(`${bonusActual} more droids destroyed!`, 'battle');
-
-                if (wave.hp <= 0) {
-                    await delay(500);
-                    endBattle(true);
-                    return;
-                }
-            }
-
-            await delay(500);
-
-            // Enemies attack
-            const enemyDamage = wave.hp * wave.damage;
+            // Droid attacks first
+            await delay(400);
+            const enemyDamage = wave.damage;
             const blocked = Math.min(p.defence, enemyDamage);
             const takenDamage = enemyDamage - blocked;
 
-            addMessage(`${wave.hp} droids attack!`, 'enemy');
+            addMessage(`Droid attacks!`, 'enemy');
 
             if (blocked > 0) {
                 addMessage(`Your DEF blocks ${blocked} damage!`, 'battle');
@@ -552,7 +505,57 @@
                 return;
             }
 
-            await delay(800);
+            await delay(400);
+
+            // Player attacks - destroy 1 droid
+            let droidsDestroyed = 1;
+            let comboTriggered = Math.random() * 100 < p.combo;
+
+            if (comboTriggered && wave.hp > 1) {
+                droidsDestroyed = 2;
+                addMessage(`COMBO! Double strike!`, 'victory');
+            }
+
+            droidsDestroyed = Math.min(droidsDestroyed, wave.hp);
+            wave.hp -= droidsDestroyed;
+
+            addMessage(`You attack!`, 'player');
+            addMessage(`${droidsDestroyed} droid${droidsDestroyed > 1 ? 's' : ''} destroyed!`, 'battle');
+
+            // Check if wave defeated
+            if (wave.hp <= 0) {
+                await delay(500);
+                endBattle(true);
+                return;
+            }
+
+            // Speed check for extra attack
+            if (Math.random() * 100 < p.speed) {
+                addMessage(`Your mech moves fast! Extra attack!`, 'system');
+                await delay(400);
+
+                let bonusDestroyed = 1;
+                let bonusCombo = Math.random() * 100 < p.combo;
+
+                if (bonusCombo && wave.hp > 1) {
+                    bonusDestroyed = 2;
+                    addMessage(`COMBO on bonus attack!`, 'victory');
+                }
+
+                bonusDestroyed = Math.min(bonusDestroyed, wave.hp);
+                wave.hp -= bonusDestroyed;
+
+                addMessage(`Bonus strike!`, 'player');
+                addMessage(`${bonusDestroyed} more droid${bonusDestroyed > 1 ? 's' : ''} destroyed!`, 'battle');
+
+                if (wave.hp <= 0) {
+                    await delay(500);
+                    endBattle(true);
+                    return;
+                }
+            }
+
+            await delay(600);
         }
 
         // End battle
