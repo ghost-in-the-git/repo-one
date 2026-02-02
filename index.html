@@ -555,7 +555,7 @@
             }
 
             wave.turn++;
-            await addMessage(`[ Turn ${wave.turn} ]`, 'system');
+            await addMessage(`- - - - - - - - - - - - - - - - - - - - -[ Turn ${wave.turn} ]- - - - - - - - - - - - - - - - - - - - - `, 'system');
 
             // Determine attacks this turn
             let speedTriggered = Math.random() * 100 < p.speed;
@@ -713,7 +713,7 @@
 
             const et = game.currentWave.enemyType;
             await addMessage(`Engagement confirmed for ${game.currentWave.count} ${et.name}s!`, 'player');
-            await addMessage(`- - - = = = - - -  C O M B A T  S T A R T  - - - = = = - - -`, 'system');
+            await addMessage(`> > >  C O M B A T  S T A R T  < < <`, 'system');
 
             // Battle loop
             async function runBattle() {
