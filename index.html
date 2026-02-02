@@ -366,13 +366,14 @@
         const btnRetreat = document.getElementById('btn-retreat');
         const timerDisplay = document.getElementById('timer-display');
 
-        // Add message to chat
-        function addMessage(text, type = 'system') {
+        // Add message to chat with delay
+        async function addMessage(text, type = 'system') {
             const msg = document.createElement('div');
             msg.className = `message ${type}`;
             msg.textContent = text;
             chatMessages.appendChild(msg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            await new Promise(resolve => setTimeout(resolve, 300));
         }
 
         // Update UI
@@ -528,41 +529,38 @@
             }
 
             wave.turn++;
-            addMessage(`--- Turn ${wave.turn} ---`, 'system');
+            await addMessage(`--- Turn ${wave.turn} ---`, 'system');
 
             // Player attacks first
-            await delay(400);
             let comboTriggered = Math.random() * 100 < p.combo;
             let playerDamage = calculateDamage(p.attack, et.defence);
 
             if (comboTriggered) {
                 playerDamage *= 2;
-                addMessage(`COMBO! Double damage!`, 'victory');
+                await addMessage(`COMBO! Double damage!`, 'victory');
             }
 
             wave.currentEnemy -= playerDamage;
-            addMessage(`You attack for ${playerDamage} damage!`, 'player');
+            await addMessage(`You attack for ${playerDamage} damage!`, 'player');
 
             // Check if current enemy destroyed
             if (wave.currentEnemy <= 0) {
                 wave.remaining--;
                 wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
                 wave.currentEnemy = null;
 
                 if (wave.remaining <= 0) {
-                    await delay(500);
                     endBattle(true);
                     return;
                 }
             } else {
-                addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+                await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
             }
 
             // Speed check for extra attack
             if (Math.random() * 100 < p.speed && wave.remaining > 0) {
-                addMessage(`Your mech moves fast! Extra attack!`, 'system');
-                await delay(400);
+                await addMessage(`Your mech moves fast! Extra attack!`, 'system');
 
                 // If current enemy is dead, attack next one
                 if (wave.currentEnemy === null) {
@@ -574,59 +572,51 @@
 
                 if (bonusCombo) {
                     bonusDamage *= 2;
-                    addMessage(`COMBO on bonus attack!`, 'victory');
+                    await addMessage(`COMBO on bonus attack!`, 'victory');
                 }
 
                 wave.currentEnemy -= bonusDamage;
-                addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
+                await addMessage(`Bonus strike for ${bonusDamage} damage!`, 'player');
 
                 if (wave.currentEnemy <= 0) {
                     wave.remaining--;
                     wave.xpEarned = (wave.xpEarned || 0) + et.xp;
-                    addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
+                    await addMessage(`${et.name} destroyed! (+${et.xp} XP)`, 'battle');
                     wave.currentEnemy = null;
 
                     if (wave.remaining <= 0) {
-                        await delay(500);
                         endBattle(true);
                         return;
                     }
                 } else {
-                    addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
+                    await addMessage(`${et.name} HP: ${wave.currentEnemy}/${et.hp}`, 'battle');
                 }
             }
-
-            await delay(400);
 
             // All remaining enemies attack in sequence
             const enemyDamage = calculateDamage(et.attack, p.defence);
 
             for (let i = 1; i <= wave.remaining; i++) {
-                addMessage(`${et.name} ${i} attacks!`, 'enemy');
+                await addMessage(`${et.name} ${i} attacks!`, 'enemy');
 
                 if (p.defence > 0 && et.attack > p.defence) {
-                    addMessage(`Your DEF reduces damage!`, 'battle');
+                    await addMessage(`Your DEF reduces damage!`, 'battle');
                 }
 
                 if (enemyDamage > 0) {
                     p.hp = Math.max(0, p.hp - enemyDamage);
-                    addMessage(`You take ${enemyDamage} damage!`, 'damage');
+                    await addMessage(`You take ${enemyDamage} damage!`, 'damage');
                     updateStats();
                 } else {
-                    addMessage(`Blocked!`, 'battle');
+                    await addMessage(`Blocked!`, 'battle');
                 }
 
                 // Check if player defeated
                 if (p.hp <= 0) {
-                    await delay(500);
                     endBattle(false);
                     return;
                 }
-
-                await delay(300);
             }
-
-            await delay(400);
         }
 
         // End battle
@@ -702,10 +692,8 @@
             }
 
             const et = game.currentWave.enemyType;
-            addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
-            await delay(500);
-            addMessage(`Your mech moves to engage the enemy...`, 'battle');
-            await delay(1000);
+            await addMessage(`Engaging ${game.currentWave.count} ${et.name}s!`, 'player');
+            await addMessage(`Your mech moves to engage the enemy...`, 'battle');
 
             // Battle loop
             async function runBattle() {
